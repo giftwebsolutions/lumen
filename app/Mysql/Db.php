@@ -27,7 +27,7 @@ class Db
 
 	public static function GetInstance(): self
 	{
-        static $instance;
+		static $instance;
 
 		if ($instance == null) {
 			$instance = new self();
@@ -48,23 +48,29 @@ class Db
 	{
 	}
 
-    static function Env()
-    {
-       // Mysql
-        self::Host(env('DB_HOST'));
-        self::Port(env('DB_PORT'));
-        self::Database(env('DB_DATABASE'));
-        self::User(env('DB_USERNAME'));
-        self::Pass(env('DB_PASSWORD'));
-        // Redis
-        self::RedisHost(env('REDIS_HOST'));
-        self::RedisPort(env('REDIS_PORT'));
-        self::RedisPass(env('REDIS_PASSWORD'));
-        self::RedisTTL(env('REDIS_TTL'));
+	static function Env()
+	{
+		if(env('DB_ENV') == 1)
+		{
+			self::Database(env('DB_DATABASE'));
+			self::Host(env('DB_HOST'));
+			self::Port(env('DB_PORT'));
+			self::User(env('DB_USERNAME'));
+			self::Pass(env('DB_PASSWORD'));
+		}
+	}
 
-        // echo env('DB_HOST').env('DB_PORT').env('DB_DATABASE').env('DB_USERNAME').env('DB_PASSWORD');
-    }
-    
+	static function EnvRedis()
+	{
+		if(env('REDIS_ENV') == 1)
+		{
+			self::RedisHost(env('REDIS_HOST'));
+			self::RedisPort(env('REDIS_PORT'));
+			self::RedisPass(env('REDIS_PASSWORD'));
+			self::RedisTTL(env('REDIS_TTL'));
+		}
+	}
+
 	final static function Host($host)
 	{
 		self::GetInstance();
@@ -153,7 +159,7 @@ class Db
 		}
 		catch(Exception $e)
 		{
-            throw $e;
+			throw $e;
 			// echo 'ERR_CONN: ' . $e->getMessage ();
 			// print_r($e->errorInfo());
 			return null;
@@ -172,9 +178,9 @@ class Db
 	 */
 	static function Query($sql, $arr = array())
 	{
-		self::GetInstance();     
-        self::Env();
-        self::$Pdo = self::Conn();   
+		self::GetInstance();
+		self::Env();
+		self::$Pdo = self::Conn();
 		self::$Stm = self::$Pdo->prepare($sql);
 		self::$Stm->execute($arr);
 
@@ -250,7 +256,7 @@ class Db
 	 */
 	static function QueryCache(string $sql, array $arr, $fetchSingleRow = false)
 	{
-        self::Env();
+		self::EnvRedis();
 
 		$re = new Redis();
 		$re->connect(self::$REDIS_HOST, self::$REDIS_PORT);
