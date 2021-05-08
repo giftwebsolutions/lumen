@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace App\Http\Mysql;
+namespace App\Mysql;
 
 use PDO;
 use Exception;
@@ -48,6 +48,17 @@ class Db
 	protected function __wakeup()
 	{
 	}
+
+    final static function Env()
+    {
+        self::GetInstance();
+        self::Host(env('DB_HOST'));
+        self::Port(env('DB_PORT'));
+        self::Database(env('DB_DATABASE'));
+        self::User(env('DB_USERNAME'));
+        self::Pass(env('DB_PASSWORD'));
+    }
+
 
 	final static function Host($host)
 	{
