@@ -48,6 +48,16 @@ class Db
 	{
 	}
 
+	static function DisableEnv()
+	{
+		env('DB_ENV', 0);
+	}
+
+	static function DisableEnvRedis()
+	{
+		env('REDIS_ENV', 0);
+	}
+
 	static function Env()
 	{
 		if(env('DB_ENV') == 1)
