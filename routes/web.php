@@ -10,26 +10,22 @@ $router->get('/hi', function () {
     return 'Hello World';
 });
 
-$router->get('user/{id}', function ($id) {    
-
+$router->get('user/{id}', function ($id) {
     return response()->json(['name' => 'Abigail', 'id' => $id]);
-
+    // return 'User '.$id;
     // return response()->json(['name' => 'Abigail', 'state' => 'CA']);
     // return response()->json(['error' => 'Unauthorized'], 401, ['X-Header-One' => 'Header Value']);
     // return response($content, $status)->header('Content-Type', $value);
     // return response()->download($pathToFile);
     // return response()->download($pathToFile, $name, $headers);
-
     // return redirect('home/dashboard');
     // return redirect()->route('login');
     // return redirect()->route('profile', ['id' => 1]);
     // return redirect()->route('profile', [$user]);
-
     // return 'User '.$id;
 });
 
 $router->get('db/{id}', function ($id) {
-
     /*
         Lumen mysql
     */
@@ -51,8 +47,11 @@ $router->get('db/{id}', function ($id) {
 
     // DB::delete('delete from user where id != 0');    
     // $last_id = DB::table('user')->insertGetId(['pass => $pass, 'email => $email]);
-    
+
     // Response
     return response()->json(['name' => 'Abigail', 'id' => $id, 'rows' => $rows, 'last_id' => $last_id]);
+});
 
+$router->get('alias/{name:[A-Za-z0-9\.]+}', function ($name) {
+    //
 });
