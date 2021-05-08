@@ -27,9 +27,9 @@ class Db
 
 	public static function GetInstance(): self
 	{
-		static $instance;
+        static $instance;
 
-		if (null === $instance) {
+		if ($instance == null) {
 			$instance = new self();
 		}
 
@@ -38,7 +38,6 @@ class Db
 
 	protected function __construct()
 	{
-		self::$Pdo = self::Conn();
 	}
 
 	protected function __clone()
@@ -49,17 +48,23 @@ class Db
 	{
 	}
 
-    final static function Env()
+    static function Env()
     {
-        self::GetInstance();
+       // Mysql
         self::Host(env('DB_HOST'));
         self::Port(env('DB_PORT'));
         self::Database(env('DB_DATABASE'));
         self::User(env('DB_USERNAME'));
         self::Pass(env('DB_PASSWORD'));
+        // Redis
+        self::RedisHost(env('REDIS_HOST'));
+        self::RedisPort(env('REDIS_PORT'));
+        self::RedisPass(env('REDIS_PASSWORD'));
+        self::RedisTTL(env('REDIS_TTL'));
+
+        // echo env('DB_HOST').env('DB_PORT').env('DB_DATABASE').env('DB_USERNAME').env('DB_PASSWORD');
     }
-
-
+    
 	final static function Host($host)
 	{
 		self::GetInstance();
@@ -148,7 +153,8 @@ class Db
 		}
 		catch(Exception $e)
 		{
-			echo 'ERR_CONN: ' . $e->getMessage ();
+            throw $e;
+			// echo 'ERR_CONN: ' . $e->getMessage ();
 			// print_r($e->errorInfo());
 			return null;
 		}
@@ -166,7 +172,9 @@ class Db
 	 */
 	static function Query($sql, $arr = array())
 	{
-		self::GetInstance();
+		self::GetInstance();     
+        self::Env();
+        self::$Pdo = self::Conn();   
 		self::$Stm = self::$Pdo->prepare($sql);
 		self::$Stm->execute($arr);
 
@@ -242,19 +250,12 @@ class Db
 	 */
 	static function QueryCache(string $sql, array $arr, $fetchSingleRow = false)
 	{
-		$port = (int) self::$REDIS_PORT;
-		$host = (string) self::$REDIS_HOST;
-		$pass = (string) self::$REDIS_PASS;
-		$ttl = (int) self::$REDIS_TTL;
-
-		if(empty($host)) { $host = 'localhost'; }
-		if(empty($port)) { $port = 6379; }
-
+        self::Env();
 
 		$re = new Redis();
-		$re->connect($host, $port);
-		if(!empty($pass)) {
-			$re->auth($pass);
+		$re->connect(self::$REDIS_HOST, self::$REDIS_PORT);
+		if(!empty(self::$REDIS_PASS)) {
+			$re->auth(self::$REDIS_PASS);
 		}
 
 		$key = md5($sql.serialize($arr));
@@ -268,7 +269,7 @@ class Db
 			$rows =  self::Query($sql,$arr)->FetchAllObj();
 		}
 
-		$re->set($key, serialize($rows), $ttl);
+		$re->set($key, serialize($rows), self::$REDIS_TTL);
 
 		return $rows;
 	}
