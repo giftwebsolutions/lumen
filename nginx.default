@@ -22,8 +22,8 @@ server {
     }
 
     location ~ /(Cache|cache|src|vendor|.git) {
-            deny all;
-            return 404;
+        deny all;
+        return 404;
     }
 
     disable_symlinks off;
