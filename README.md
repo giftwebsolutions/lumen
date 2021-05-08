@@ -1,2 +1,2 @@
-# lumen-nginx
-Php lumen config
+# Php lumen nginx api json
+Php lumen nginx api json example.
