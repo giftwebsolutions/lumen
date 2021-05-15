@@ -1,6 +1,7 @@
 <?php
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use App\Mysql\Db as Database;
 
 $router->get('/', function () use ($router) {
     return $router->app->version();
@@ -25,6 +26,11 @@ $router->get('user/{id}', function ($id) {
     // return 'User '.$id;
 });
 
+$router->get('db1/{id}', function ($id) {
+    $rows = Database::Query("SELECT * FROM user WHERE id > :id", [':id' => 0])->FetchAllObj();
+    return response()->json(['name' => 'Abigail', 'id' => $id, 'rows' => $rows]);
+});
+
 $router->get('db/{id}', function ($id) {
     /*
         Lumen mysql
@@ -33,9 +39,9 @@ $router->get('db/{id}', function ($id) {
     $pass = md5($email);
     $new_id = app('db')->select('insert into user (email,pass) values (?, ?)', [$email, $pass]);
     $rows = app('db')->select('select * from user where id != :id', ['id' => $id]);
-    
+
     /*
-        Lumen facades 
+        Lumen facades
         Uncomment: $app->withFacades(); in bootstrap/app.php
     */
     $email = uniqid().'@woo.xx';
@@ -45,7 +51,7 @@ $router->get('db/{id}', function ($id) {
     $last_id = DB::getPdo()->lastInsertId();
     $rows = DB::select('select * from user where id != :id', ['id' => $id]);
 
-    // DB::delete('delete from user where id != 0');    
+    // DB::delete('delete from user where id != 0');
     // $last_id = DB::table('user')->insertGetId(['pass => $pass, 'email => $email]);
 
     // Response

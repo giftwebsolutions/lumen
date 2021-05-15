@@ -6,6 +6,9 @@ use PDO;
 use Exception;
 use Redis;
 
+/**
+ * Db - Mysql class
+ */
 class Db
 {
 	public static $Pdo = null;
