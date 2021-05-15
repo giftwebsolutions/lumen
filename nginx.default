@@ -1,10 +1,14 @@
 server {
     listen 80;
     listen [::]:80;
+    
     server_name lumen.xx;
     root /var/www/html/lumen.xx/public;
     index index.php index.html;
-
+    
+    error_log  /var/log/lumen.xx.error.log warn;
+    access_log  /var/log/lumen.xx.access.log;
+        
     location / {
         try_files $uri $uri/ /index.php?url=$uri&$args;
     }
@@ -21,7 +25,7 @@ server {
         rewrite . /favicon/favicon.ico;
     }
 
-    location ~ /(Cache|cache|src|vendor|.git) {
+    location ~ /(Cache|cache|.cache|.git|src|vendor) {
         deny all;
         return 404;
     }
@@ -29,7 +33,29 @@ server {
     location ~ /\.(?!well-known).* {
         deny all;
     }
-
+    
     disable_symlinks off;
     client_max_body_size 100M;
+
+    gunzip on;
+    gzip on;
+    gzip_proxied any;
+    gzip_min_length 256;
+    gzip_http_version 1.1;
+    gzip_types        
+        application/geo+json
+        application/javascript
+        application/x-javascript
+        application/json
+        application/ld+json
+        application/manifest+json                
+        image/svg+xml
+        text/css
+        text/javascript
+        text/plain
+        text/xml;
+    
+    # Tls redirect
+    # return 301 https://$host$request_uri;
+    # return 301 https://lumen.xx$request_uri;
 }
