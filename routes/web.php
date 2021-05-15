@@ -11,6 +11,8 @@ $router->get('/hi', function () {
     return 'Hello World';
 });
 
+$router->get('user/{id}', 'ExampleController@show');
+
 $router->get('user/{id}', function ($id) {
     return response()->json(['name' => 'Abigail', 'id' => $id]);
     // return 'User '.$id;
