@@ -6,9 +6,6 @@ use PDO;
 use Exception;
 use Redis;
 
-/**
- * Db - Mysql class
- */
 class Db
 {
 	public static $Pdo = null;
@@ -25,28 +22,18 @@ class Db
 	protected static $REDIS_PORT = 6379;
 	protected static $REDIS_TTL = 600;
 
+	private static $instance = null;
 	public static function GetInstance(): self
 	{
-		static $instance;
-
-		if ($instance == null) {
-			$instance = new self();
+		// static $instance;
+		if (self::$instance === null) {
+			self::$instance = new self();
 		}
-
-		return $instance;
+		return self::$instance;
 	}
-
-	protected function __construct()
-	{
-	}
-
-	protected function __clone()
-	{
-	}
-
-	protected function __wakeup()
-	{
-	}
+	private function __construct() {}
+	private function __clone() {}
+	private function __wakeup() {}
 
 	static function DisableEnv()
 	{
@@ -83,67 +70,66 @@ class Db
 
 	final static function Host($host)
 	{
-		self::GetInstance();
 		self::$MYSQL_HOST = $host;
 		return self::GetInstance();
 	}
 
 	final static function Port($port)
 	{
-		self::GetInstance();
 		self::$MYSQL_PORT = (int) $port;
 		return self::GetInstance();
 	}
 
 	final static function Database($name)
 	{
-		self::GetInstance();
 		self::$MYSQL_DBNAME = $name;
 		return self::GetInstance();
 	}
 
 	final static function User($name)
 	{
-		self::GetInstance();
 		self::$MYSQL_USER = $name;
 		return self::GetInstance();
 	}
 
 	final static function Pass($pass)
 	{
-		self::GetInstance();
 		self::$MYSQL_PASS = $pass;
 		return self::GetInstance();
 	}
 
 	final static function RedisTTL($sec)
 	{
-		self::GetInstance();
 		self::$REDIS_TTL = (int) $sec;
 		return self::GetInstance();
 	}
 
 	final static function RedisHost($host)
 	{
-		self::GetInstance();
 		self::$REDIS_HOST = $host;
 		return self::GetInstance();
 	}
 
 	final static function RedisPort($port)
 	{
-		self::GetInstance();
 		self::$REDIS_PORT = (int) $port;
 		return self::GetInstance();
 	}
 
 	final static function RedisPass($pass)
 	{
-		self::GetInstance();
 		self::$REDIS_PASS = $pass;
 		return self::GetInstance();
 	}
 
+	/**
+	 * PDO Connection
+	 *
+	 * Ssl
+	 * ALTER USER 'dbuser'@'%' REQUIRE SSL
+	 * REVOKE ALL PRIVILEGES ON *.* FROM 'root'@'localhost'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' REQUIRE SSL WITH GRANT OPTION MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0;
+	 * @return void
+	 */
 	final static function Conn(){
 		try
 		{
@@ -154,17 +140,26 @@ class Db
 			// throw error exception
 			$con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 			// default fetch mode
-			$con->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+			$con->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ); // PDO::FETCH_ASSOC
 			// don't colose connecion on script end
 			$con->setAttribute(PDO::ATTR_PERSISTENT, true);
 			// set utf for connection utf8_general_ci or utf8_unicode_ci
 			$con->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci'");
 			// prepared statements, don't cache query with prepared statments
 			$con->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+			// Multiple statments
+			$con->setAttribute(PDO::MYSQL_ATTR_MULTI_STATEMENTS,false);
 			// auto commit
 			// $con->setAttribute(PDO::ATTR_AUTOCOMMIT,flase);
 			// buffered querry default
-			// $con->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true);
+			// $con->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY,true);
+			// Ssl
+			$con->setAttribute(PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT,false);
+			$con->setAttribute(PDO::MYSQL_ATTR_SSL_CA,'/etc/mysql/certs/ca-cert.pem');
+			// $con->setAttribute(PDO::MYSQL_ATTR_SSL_CA,'/etc/mysql/certs/server-cert.pem');
+			// Optional
+			// $con->setAttribute(PDO::MYSQL_ATTR_SSL_KEY,'/etc/mysql/ssl/client-key.pem');
+			// $con->setAttribute(PDO::MYSQL_ATTR_SSL_CERT,'/etc/mysql/ssl/client-cert.pem');
 			return $con;
 		}
 		catch(Exception $e)
@@ -188,12 +183,10 @@ class Db
 	 */
 	static function Query($sql, $arr = array())
 	{
-		self::GetInstance();
 		self::Env();
 		self::$Pdo = self::Conn();
 		self::$Stm = self::$Pdo->prepare($sql);
 		self::$Stm->execute($arr);
-
 		return self::GetInstance();
 	}
 
