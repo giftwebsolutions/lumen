@@ -1,2 +1,2 @@
-# Php lumen nginx api json
-Php lumen nginx api json example.
+# Lumen rest api json
+Php lumen rest api app sample.
