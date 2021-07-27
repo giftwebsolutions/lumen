@@ -71,7 +71,7 @@ mysql -u root -p < /var/www/html/lumex.xx/api_app.sql
 ### Lumen start session
 nano bootstrap/app.php
 ```php
-<?php 
+<?php
 // Session lifetime seconds
 $lifetime = 60 * 120;
 
@@ -101,23 +101,23 @@ nano App/Models/User.php
  * If user authenticated
  *
  * @return mixed User object or null
- */    
-static public function auth($token) 
-{        
+ */
+static public function auth($token)
+{
     // Validate user token here in database or session
-    if($token == 'token123') 
+    if($token == 'token123')
     {
         // User object or null
         // return new self();
-        
+
         // Logged user object or null
         $user = new User();
         $user->name = 'Hi.iH';
         $user->email = 'hi@example.com';
-        $user->role = 'worker';            
+        $user->role = 'worker';
         return $user;
     }
-    
+
     // Error
     return null;
 }
@@ -153,18 +153,18 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         /* Custom Authorization */
-        
+
         $this->app['auth']->viaRequest('api', function ($request) {
-            
+
             // Get user token
             $token = $request->header('Authorization');
-            
+
             // Clean bearer token
             $token = str_ireplace('Bearer ', '', $token);
-            
+
             // Validate token in User Controller (return user object or null)
             return User::auth($token);
-                        
+
         });
     }
 }
@@ -174,6 +174,9 @@ class AuthServiceProvider extends ServiceProvider
 ```sh
 # get
 curl -H 'Authorization: token123' http://lumex.xx/auth
+
+# POST login user
+curl -X POST -d 'email=worker@woo.xx&password=password' http://lumen.xx/login
 
 # POST valid auth
 curl -X POST -d 'name=HELLO&pass=password' -H 'Authorization: Bearer token123' http://lumex.xx/panel

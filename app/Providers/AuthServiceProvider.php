@@ -36,18 +36,18 @@ class AuthServiceProvider extends ServiceProvider
             //if ($request->input('api_token')) {
             //   return User::where('api_token', $request->input('api_token'))->first();
             //}
-                                    
+
             /* Custom Authorization */
-            
+
             // Get user token
             $token = $request->header('Authorization');
-            
+
             // Clean bearer token
             $token = str_ireplace('Bearer ', '', $token);
-            
+
             // Validate token in User Controller (return user object or null)
             return User::auth($token);
-                        
+
         });
     }
 }
