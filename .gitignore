@@ -1,6 +1,5 @@
 /vendor
 /.idea
-/storage
 composer.lock
 Homestead.json
 Homestead.yaml
