@@ -1,15 +1,22 @@
 <?php
 namespace App\Http\Controllers;
 
+use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class AuthController extends Controller
 {   
     function __construct() {
-        // Enable authentication for controller methods (if errors remove middleware from routes in file web.php)        
-        $this->middleware('auth', ['only' => ['create','update','delete']]);        
-        // $this->middleware('auth', ['except' => ['select']]);
+        // Enable authentication for controller methods
+        $this->middleware('auth', ['only' => ['create','update','delete']]);
+
+        // Check logged user role
+        $this->middleware('role:worker|admin', ['only' => ['create','update','delete']]);
+        // $this->middleware('role:admin|worker|user', ['only' => ['create','update','delete']]); 
+        
+        // Enable authentication for controller methods
+        // $this->middleware('auth', ['except' => ['create','auth']]);
     }
 
     /**
@@ -61,5 +68,20 @@ class AuthController extends Controller
             "user.email" => $user->email,
             "user.role" => $user->role
         ]);
+    }
+    
+    /**
+     * Login user
+     *
+     * @return Response
+     */
+    public function login(Request $request) {
+        $credentials = $request->only(['email','password']);
+
+        if (Auth::attempt($credentials, $request->has('remember'))) {
+            return'logged in';
+        } else {
+            return 'not logged in';
+        }
     }
 }

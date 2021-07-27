@@ -43,7 +43,7 @@ $router->post('/panel', 'AuthController@create');
 $router->post('/panel/auth', ['middleware' => 'auth', 'uses' => 'AuthController@create']);
 
 // Authenticate middelware
-$router->post('/panel/{id}', ['middleware' => 'auth', function (Request $request, $id) {
+$router->post('/panel/{id}', ['middleware' => ['auth','role:admin|worker|user'], function (Request $request, $id) {
     $user = $request->user();
         
     return response()->json([
@@ -53,6 +53,12 @@ $router->post('/panel/{id}', ['middleware' => 'auth', function (Request $request
         "user.role" => $user->role
     ]);
 }]);
+
+// Middelware auth sample
+//$router->group(['middleware' => 'auth'], function () use ($router) {
+//    $router->get('/panel/dashboard', ['uses' => 'Controller@method']);
+//    $router->get('/panel/profil', ['uses' => 'Controller@method']);
+//});
 
 // Set session
 $router->get('set-session', function (Request $request) {
@@ -129,7 +135,17 @@ $router->get('alias/{name:[A-Za-z0-9\.]+}/{code}', function ($name, $code) {
     //
 });
 
-// Middelware auth
-$router->group(['middleware' => 'middleware.auth'], function ($app) {
-    $app->get('/user/dashboard', ['uses' => 'Controller@method']);
+
+// Prefix url
+$router->group(['prefix' => 'admin'], function () use ($router) {
+    $router->get('users', function () {
+        // Matches The "/admin/users" URL
+    });
+});
+
+
+$router->group(['prefix' => 'accounts/{accountId}'], function () use ($router) {
+    $router->get('detail', function ($accountId) {
+        // Matches The "/accounts/{accountId}/detail" URL
+    });
 });

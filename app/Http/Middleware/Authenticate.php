@@ -42,7 +42,7 @@ class Authenticate
         }       
         
         /*
-        // Check input 
+        // Check form input
         if ($request->input('age') <= 200) { 
             // Redirect
             return redirect('home');
@@ -52,11 +52,13 @@ class Authenticate
         }
         */
         
-        // Check User role
+        /*
+        // Check logged User role see: RoleMiddleware.php
         if (! $request->user()->hasRole(['user','admin','worker'])) {
             // Error response
             return response('Unauthorized role.', 401);
         }
+        */
 
         return $next($request);
     }
