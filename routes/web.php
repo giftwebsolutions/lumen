@@ -1,20 +1,28 @@
 <?php
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use App\Mysql\Db as Database;
 
 $router->get('/', function () use ($router) {
+    return response()->json([
+        'lumen.version' => $router->app->version(),
+        'lumen.routes' => 'routes/web.php'
+    ]);
+    
     return $router->app->version();
 });
 
-$router->get('/hi', function () {
+$router->get('/hi', 'home', function () {
     return 'Hello World';
 });
 
 $router->get('user/{id}', 'ExampleController@show');
 
-$router->get('user/{id}', function ($id) {
-    return response()->json(['name' => 'Abigail', 'id' => $id]);
+$router->get('user/{id}', function ($id, Request $request) {
+    return response()->json([
+        'url.id' => $id
+    ]);
     // return 'User '.$id;
     // return response()->json(['name' => 'Abigail', 'state' => 'CA']);
     // return response()->json(['error' => 'Unauthorized'], 401, ['X-Header-One' => 'Header Value']);
@@ -28,11 +36,61 @@ $router->get('user/{id}', function ($id) {
     // return 'User '.$id;
 });
 
-$router->get('db1/{id}', function ($id) {
-    $rows = Database::Query("SELECT * FROM user WHERE id > :id", [':id' => 0])->FetchAllObj();
-    return response()->json(['name' => 'Abigail', 'id' => $id, 'rows' => $rows]);
+// Authenticate middleware in controller constructor
+$router->post('/panel', 'AuthController@create');
+
+// Authenticate middelware
+$router->post('/panel/{id}', ['middleware' => 'auth', function (Request $request, $id) {
+    $user = $request->user();
+        
+    return response()->json([
+        "authenticated" => $request->header('Authorization'), 
+        "user.name" => $user->name,
+        "user.email" => $user->email,
+        "user.role" => $user->role
+    ]);
+}]);
+
+// Does not work here (even if middleware from controller constructor has been removed)
+// $router->post('/panel', ['middleware' => 'auth', 'users' => 'AuthController@create']);
+
+// Set session
+$router->get('set-session', function (Request $request) {
+    // Set session data
+    $request->session()->put('name', uniqid());
+    
+    // Get session data
+    $sid = $request->session()->get('_token');
+    $name = $request->session()->get('name');
+    
+    return response()->json([
+        'session.id' => $sid,
+        'session.name' => $name
+    ]);
 });
 
+// Get session data
+$router->get('session', function (Request $request) {
+    if($request->session()->has('name')) {
+    
+        // Get session data
+        $sid = $request->session()->get('_token');
+        $name = $request->session()->get('name');
+    
+        return response()->json([
+            'session.id' => $sid,
+            'session.name' => $name
+        ]);        
+    } else {
+        return response()->json([
+            'error' => [
+                'description' => 'ERR_SESSION'
+            ]
+        ], 403);
+    }    
+});
+
+// Db
 $router->get('db/{id}', function ($id) {
     /*
         Lumen mysql
@@ -57,9 +115,16 @@ $router->get('db/{id}', function ($id) {
     // $last_id = DB::table('user')->insertGetId(['pass => $pass, 'email => $email]);
 
     // Response
-    return response()->json(['name' => 'Abigail', 'id' => $id, 'rows' => $rows, 'last_id' => $last_id]);
+    return response()->json(['name' => 'Bambo', 'id' => $id, 'rows' => $rows, 'last_id' => $last_id]);
 });
 
-$router->get('alias/{name:[A-Za-z0-9\.]+}', function ($name) {
+// Custom database class
+$router->get('database/{id}', function ($id) {
+    $rows = Database::Query("SELECT * FROM user WHERE id > :id", [':id' => 0])->FetchAllObj();
+    return response()->json(['name' => 'Bambo', 'id' => $id, 'rows' => $rows]);
+});
+
+// Get url parts
+$router->get('alias/{name:[A-Za-z0-9\.]+}/{code}', function ($name, $code) {
     //
 });

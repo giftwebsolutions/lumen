@@ -67,3 +67,59 @@ server {
 # import database
 mysql -u root -p < /var/www/html/lumex.xx/api_app.sql
 ```
+
+### Lumen start session
+nano bootstrap/app.php
+```php
+<?php 
+// Session lifetime seconds
+$lifetime = 60 * 120;
+
+// Session lifetimes
+ini_set('session.gc_maxlifetime', $lifetime);
+ini_set('session.gc_probability', 1);
+ini_set('session.gc_divisor', 100);
+
+// Session cookie (change secure to true in production for https)
+session_set_cookie_params([
+    'lifetime' => $lifetime,
+    'path' => '/',
+    'domain' => '.'.$_SERVER["HTTP_HOST"],
+    'secure' => isset($_SERVER["HTTPS"]),
+    'httponly' => true,
+    'samesite' => 'Strict'
+]);
+
+// Run php session
+session_start();
+```
+
+### Authentication
+nano App/Providers/AuthServiceProvider.php
+```sh
+<?php
+ 
+public function boot()
+{
+    // Here you need define how you wish users to be authenticated for your Lumen app.
+}
+```
+
+### Authentication curl
+```sh
+# get
+curl -H 'Authorization: token12' http://lumex.xx/auth
+# post
+
+# invalid
+curl -X POST -d 'name=HELLO&pass=password' -H 'Authorization: token12' http://lumex.xx/panel
+
+# valid
+curl -X POST -d 'name=HELLO&pass=password' -H 'Authorization: token123' http://lumex.xx/panel/12345
+```
+
+### Lumen api token authentication
+https://www.youtube.com/watch?v=Plh5wiISHTU
+
+### Lumen api session
+https://github.com/rummykhan/lumen-session-example

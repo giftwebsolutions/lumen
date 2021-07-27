@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Contracts\Auth\Factory as Auth;
+use Illuminate\Auth\GenericUser;
 
 class Authenticate
 {
@@ -26,7 +27,7 @@ class Authenticate
     }
 
     /**
-     * Handle an incoming request.
+     * Handle an incoming request, validate user privileges.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
@@ -36,7 +37,25 @@ class Authenticate
     public function handle($request, Closure $next, $guard = null)
     {
         if ($this->auth->guard($guard)->guest()) {
+            // Error response        
             return response('Unauthorized.', 401);
+        }       
+        
+        /*
+        // Check input 
+        if ($request->input('age') <= 200) { 
+            // Redirect
+            return redirect('home');
+            
+            // Or redirect to controller
+            return redirect()->action('ErrorController@index');
+        }
+        */
+        
+        // Check User role
+        if (! $request->user()->hasRole(['user','admin','worker'])) {
+            // Error response
+            return response('Unauthorized role.', 401);
         }
 
         return $next($request);

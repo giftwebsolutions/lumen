@@ -1,7 +1,11 @@
 <?php
-
+// Composer autoload
 require_once __DIR__.'/../vendor/autoload.php';
 
+// Standard php session
+// require_once 'init.php';
+
+// Lumen 
 (new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
     dirname(__DIR__)
 ))->bootstrap();
@@ -28,7 +32,6 @@ $app = new Laravel\Lumen\Application(
 */
 
 $app->withFacades();
-
 $app->withEloquent();
 
 /*
@@ -67,6 +70,26 @@ $app->configure('app');
 
 /*
 |--------------------------------------------------------------------------
+| Register Sessions
+|--------------------------------------------------------------------------
+|
+| Run sessions here.
+|
+*/
+$app->middleware([
+    \Illuminate\Session\Middleware\StartSession::class,
+]);
+
+$app->singleton(Illuminate\Session\SessionManager::class, function () use ($app) {
+    return $app->loadComponent('session', Illuminate\Session\SessionServiceProvider::class, 'session');
+});
+
+$app->singleton('session.store', function () use ($app) {
+    return $app->loadComponent('session', Illuminate\Session\SessionServiceProvider::class, 'session.store');
+});
+
+/*
+|--------------------------------------------------------------------------
 | Register Middleware
 |--------------------------------------------------------------------------
 |
@@ -76,13 +99,13 @@ $app->configure('app');
 |
 */
 
-// $app->middleware([
-//     App\Http\Middleware\ExampleMiddleware::class
-// ]);
+$app->middleware([
+     App\Http\Middleware\ExampleMiddleware::class
+]);
 
-// $app->routeMiddleware([
-//     'auth' => App\Http\Middleware\Authenticate::class,
-// ]);
+$app->routeMiddleware([
+    'auth' => App\Http\Middleware\Authenticate::class,
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -96,7 +119,7 @@ $app->configure('app');
 */
 
 // $app->register(App\Providers\AppServiceProvider::class);
-// $app->register(App\Providers\AuthServiceProvider::class);
+$app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
 
 /*
