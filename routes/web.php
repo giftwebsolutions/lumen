@@ -114,8 +114,12 @@ $router->get('db/{id}', function ($id) {
     $pass = md5($email);
 
     $new_id = DB::insert('insert into user (email,pass) values (?, ?)', [$email, $pass]);
+    // Last id
     $last_id = DB::getPdo()->lastInsertId();
-    $rows = DB::select('select * from user where id != :id', ['id' => $id]);
+    // All rows
+    $rows = DB::select('select * from user where id != :id', ['id' => $id]);    
+    // Single row
+    $user = collect(DB::select('select * from user where id != :id', ['id' => $id]))->first();
 
     // DB::delete('delete from user where id != 0');
     // $last_id = DB::table('user')->insertGetId(['pass => $pass, 'email => $email]);
