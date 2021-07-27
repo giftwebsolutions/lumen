@@ -94,28 +94,87 @@ session_set_cookie_params([
 session_start();
 ```
 
-### Authentication
+### Authenticate user
+nano App/Controller/User.php
+```php
+/**
+ * If user authenticated
+ *
+ * @return mixed User object or null
+ */    
+static public function auth($token) 
+{        
+    // Validate user token here in database or session
+    if($token == 'token123') 
+    {
+        // User object or null
+        return new self();
+    }
+    
+    // Error
+    return null;
+}
+```
+
+### Authenticate service
 nano App/Providers/AuthServiceProvider.php
 ```sh
 <?php
- 
-public function boot()
+namespace App\Providers;
+
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\ServiceProvider;
+
+class AuthServiceProvider extends ServiceProvider
 {
-    // Here you need define how you wish users to be authenticated for your Lumen app.
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        //
+    }
+
+    /**
+     * Boot the authentication services for the application.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        /* Custom Authorization */
+        
+        $this->app['auth']->viaRequest('api', function ($request) {
+            
+            // Get user token
+            $token = $request->header('Authorization');
+            
+            // Clean bearer token
+            $token = str_ireplace('Bearer ', '', $token);
+            
+            // Validate token in User Controller (return user object or null)
+            return User::auth($token);
+                        
+        });
+    }
 }
 ```
 
 ### Authentication curl
 ```sh
 # get
-curl -H 'Authorization: token12' http://lumex.xx/auth
-# post
+curl -H 'Authorization: token123' http://lumex.xx/auth
 
-# invalid
-curl -X POST -d 'name=HELLO&pass=password' -H 'Authorization: token12' http://lumex.xx/panel
+# POST valid auth
+curl -X POST -d 'name=HELLO&pass=password' -H 'Authorization: Bearer token123' http://lumex.xx/panel
+curl -X POST -d 'name=HELLO&pass=password' -H 'Authorization: Bearer token123' http://lumex.xx/panel/777
 
-# valid
-curl -X POST -d 'name=HELLO&pass=password' -H 'Authorization: token123' http://lumex.xx/panel/12345
+# POST invalid auth
+curl -X POST -d 'name=HELLO&pass=password' -H 'Authorization: Bearer token12' http://lumex.xx/panel
+curl -X POST -d 'name=HELLO&pass=password' -H 'Authorization: Bearer token12' http://lumex.xx/panel/888
 ```
 
 ### Lumen api token authentication
