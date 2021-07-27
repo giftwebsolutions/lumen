@@ -37,7 +37,7 @@ $router->get('user/{id}', function ($id, Request $request) {
 });
 
 // Authenticate middleware in controller constructor
-$router->post('/panel', 'AuthController@create');
+// $router->post('/panel', 'AuthController@create');
 
 // Authenticate middelware
 $router->post('/panel/{id}', ['middleware' => 'auth', function (Request $request, $id) {
@@ -51,8 +51,8 @@ $router->post('/panel/{id}', ['middleware' => 'auth', function (Request $request
     ]);
 }]);
 
-// Does not work here (even if middleware from controller constructor has been removed)
-// $router->post('/panel', ['middleware' => 'auth', 'users' => 'AuthController@create']);
+// Authentication
+$router->post('/panel', ['middleware' => 'auth', 'uses' => 'AuthController@create']);
 
 // Set session
 $router->get('set-session', function (Request $request) {
@@ -127,4 +127,9 @@ $router->get('database/{id}', function ($id) {
 // Get url parts
 $router->get('alias/{name:[A-Za-z0-9\.]+}/{code}', function ($name, $code) {
     //
+});
+
+// Middelware auth
+$router->group(['middleware' => 'middleware.auth'], function ($app) {
+    $app->get('/user/dashboard', ['uses' => 'Controller@method']);
 });
