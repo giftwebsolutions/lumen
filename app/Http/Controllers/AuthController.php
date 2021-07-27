@@ -76,12 +76,18 @@ class AuthController extends Controller
      * @return Response
      */
     public function login(Request $request) {
+    
+        $this->validate($request, [
+            'email'    => 'required|email|max:255',
+            'password' => 'required'
+        ]);
+        
         $credentials = $request->only(['email','password']);
 
         if (Auth::attempt($credentials, $request->has('remember'))) {
-            return'logged in';
-        } else {
-            return 'not logged in';
+            return ['result' => 'ok'];
         }
+        
+        return ['result' => 'not ok'];
     }
 }

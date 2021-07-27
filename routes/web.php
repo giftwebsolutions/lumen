@@ -149,7 +149,7 @@ $router->group(['prefix' => 'admin'], function () use ($router) {
 
 
 $router->group(['prefix' => 'accounts/{accountId}'], function () use ($router) {
-    $router->get('detail', function ($accountId) {
+    $router->post('detail', function ($accountId) {
         // Matches The "/accounts/{accountId}/detail" URL
     });
 });

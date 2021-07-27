@@ -72,7 +72,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
                 $o->name = $user->name;
                 $o->email = $user->email;
                 $o->role = $user->role;
-                $o->token = $user->token;            
+                $o->token = $user->token;    
                 
                 // return user
                 return $o;                
