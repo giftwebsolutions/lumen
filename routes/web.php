@@ -37,7 +37,10 @@ $router->get('user/{id}', function ($id, Request $request) {
 });
 
 // Authenticate middleware in controller constructor
-// $router->post('/panel', 'AuthController@create');
+$router->post('/panel', 'AuthController@create');
+
+// Authentication
+$router->post('/panel/auth', ['middleware' => 'auth', 'uses' => 'AuthController@create']);
 
 // Authenticate middelware
 $router->post('/panel/{id}', ['middleware' => 'auth', function (Request $request, $id) {
@@ -50,9 +53,6 @@ $router->post('/panel/{id}', ['middleware' => 'auth', function (Request $request
         "user.role" => $user->role
     ]);
 }]);
-
-// Authentication
-$router->post('/panel', ['middleware' => 'auth', 'uses' => 'AuthController@create']);
 
 // Set session
 $router->get('set-session', function (Request $request) {
