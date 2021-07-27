@@ -1,6 +1,8 @@
 <?php
 namespace App\Models;
 
+use \stdClass;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -22,7 +24,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'role'
+        'name', 'email', 'role', 'token'
     ];
 
     /**
@@ -54,19 +56,27 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @return mixed User object or null
      */    
     static public function auth($token) 
-    {        
-        // Validate user token here in database or session
-        if($token == 'token123') 
-        {   
-            // User object
-            $user = new User();
-            $user->name = 'Hello';
-            $user->email = 'hi@example.com';
-            $user->role = 'worker';            
-            return $user;
-            
-            // User object
-            // return new self();
+    {   
+        // Default    
+        $user = null;
+        
+        // Check user token
+        $user = collect(DB::select('select * from user where token = :t', ['t' => $token]))->first();
+        
+        if(!empty($user)) {        
+            // Validate user token here in database or session
+            if($user->id > 0) {            
+                // User
+                $o = new User();
+                // Add
+                $o->name = $user->name;
+                $o->email = $user->email;
+                $o->role = $user->role;
+                $o->token = $user->token;            
+                
+                // return user
+                return $o;                
+            }            
         }
         
         // Error send null
