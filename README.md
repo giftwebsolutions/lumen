@@ -125,7 +125,7 @@ static public function auth($token)
 
 ### Authenticate service
 nano App/Providers/AuthServiceProvider.php
-```sh
+```php
 <?php
 namespace App\Providers;
 
