@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Auth\Authenticatable;
@@ -58,14 +57,19 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     {        
         // Validate user token here in database or session
         if($token == 'token123') 
-        {
-            // User object or null
-            return new self();
+        {   
+            // User object
+            $user = new User();
+            $user->name = 'Hello';
+            $user->email = 'hi@example.com';
+            $user->role = 'worker';            
+            return $user;
+            
+            // User object
+            // return new self();
         }
         
-        // Error
+        // Error send null
         return null;
     }
-    
-    
 }

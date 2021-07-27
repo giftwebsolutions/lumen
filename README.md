@@ -95,7 +95,7 @@ session_start();
 ```
 
 ### Authenticate user
-nano App/Controller/User.php
+nano App/Models/User.php
 ```php
 /**
  * If user authenticated
@@ -108,7 +108,14 @@ static public function auth($token)
     if($token == 'token123') 
     {
         // User object or null
-        return new self();
+        // return new self();
+        
+        // Logged user object or null
+        $user = new User();
+        $user->name = 'Hi.iH';
+        $user->email = 'hi@example.com';
+        $user->role = 'worker';            
+        return $user;
     }
     
     // Error
