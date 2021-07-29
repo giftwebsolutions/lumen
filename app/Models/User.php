@@ -78,7 +78,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     protected $attributes = [
         'name' => '',
         'role' => 'user',
-        'active' => 1
+        'active' => 0
     ];
 
     /**
