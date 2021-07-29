@@ -1,12 +1,13 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -15,135 +16,86 @@ class AuthController extends Controller
 		$this->middleware('auth', ['only' => ['create','update','delete']]);
 
 		// Check logged user role
-		$this->middleware('role:worker|admin', ['only' => ['create','update','delete']]);
+		$this->middleware('role:worker|admin|user', ['only' => ['create','update','delete']]);
 		// $this->middleware('role:admin|worker|user', ['only' => ['create','update','delete']]);
 
 		// Enable authentication for controller methods
-		// $this->middleware('auth', ['except' => ['create','auth']]);
+		// $this->middleware('auth', ['except' => ['login']]);
 	}
 
 	/**
-	 * Create user
+	 * Login user, create token
 	 *
 	 * @return Response
 	 */
-	public function create(Request $request)
+	public function login(Request $request)
 	{
-		// $user = $request->user();
-		$user = Auth::user();
-		$id = Auth::id();
-		$ok = 'err';
+		$this->validate($request, [
+		    'email' => 'required|email|max:255',
+		    'pass' => 'required|min:8'
+		], [
+			'required' => strtoupper('ERR_:attribute'),
+			'*' => strtoupper('ERR_:attribute')
+		]);
 
-		if (Auth::check()) {
-			// The user is logged in...
-			$ok = 'ok';
+		$size = env('AUTH_TOKEN_LENGTH', 32);
+		$token = bin2hex(random_bytes($size));
+
+		try {
+			$user = collect(User::where('email', $request->input('email'))->where('pass', md5($request->input('pass')))->get())->first();
+			if($user->id > 0) {
+				User::where('id', $user->id)->update(['api_token' => $token]);
+				return response()->json(['token' => $token]);
+			}
+		} catch (\Exception $e) {
+			return response()->json(['error' => 'ERR_CREDENTIALS', 'error_message' => $e->getMessage()], 402);
 		}
 
-		return response()->json([
-			"authenticated" => $request->header('Authorization'),
-			"user.id" => $id,
-			"user.name" => $user->name,
-			"user.email" => $user->email,
-			"user.role" => $user->role,
-			'auth_ok' => $ok
-		]);
+		return response()->json(['error' => 'ERR_AUTHENTICATION'], 401);
 	}
 
 	/**
-	 * Update user
+	 * Update user auth only
 	 *
 	 * @return Response
 	 */
 	public function update(Request $request)
 	{
 		$user = $request->user();
+		$user = Auth::user();
+		$id = Auth::id();
 
-		return response()->json([
-			"authenticated" => $request->header('Authorization'),
-			"user.name" => $user->name,
-			"user.email" => $user->email,
-			"user.role" => $user->role
-		]);
-	}
+		// The user is logged in
+		if (Auth::check()) {
+			// Update user here ...
+			// Facades
+			// $cnt = DB::update('update users set name = :name where id = :id', ['id' => $user->id, 'name' => $request->input('name')]);
+			// Eloquent
+			// $cnt = User::where('id', $user->id)->update('name', $request->input('name'));
 
-	/**
-	 * Delete user
-	 *
-	 * @return Response
-	 */
-	public function delete(Request $request)
-	{
-		$user = $request->user();
-
-		return response()->json([
-			"authenticated" => $request->header('Authorization'),
-			"user.name" => $user->name,
-			"user.email" => $user->email,
-			"user.role" => $user->role
-		]);
-	}
-
-	/**
-	 * Login user
-	 *
-	 * @return Response
-	 */
-	public function login(Request $request)
-	{
-		// $this->validate($request, [
-		//     'email' => 'required|email|max:255',
-		//     'password' => 'required|min:8'
-		// ]);
-
-		// Request array
-		$all = $request->all();
-
-		// Array
-		$data = [
-			implode(',', $all),
-			// 'ip' => '127.0.0.1',
-			// 'airports' => ['NYC', 'LIT'],
-		];
-
-		$validator = Validator::make($data, [
-			'email' => 'required|email|max:255',
-			'password' => 'required|min:8',
-			// 'ip' => 'required|ip',
-			// 'airports' => ['required', 'array', Rule::in(['NYC', 'LIT'])]
-		], [
-			'required' => strtoupper('ERR_:attribute'),
-			'email' => strtoupper('ERR_:attribute'),
-			'password' => strtoupper('ERR_:attribute'),
-		]);
-
-		// MessageBag https://laravel.com/api/5.5/Illuminate/Support/MessageBag.html
-		$errors = $validator->errors();
-		// Keys list
-		$err_keys = $validator->errors()->keys();
-		// Messages
-		$err_msgs = $validator->errors()->all();
-		// First message
-		$first_msg = $validator->errors()->first();
-
-		if ($validator->fails()) {
-			return $validator->errors();
+			return response()->json([
+				"user.id" => $user->id,
+				"user.name" => $user->name,
+				"user.email" => $user->email,
+				"user.role" => $user->role,
+			]);
 		}
 
-		try
-		{
-			$token = User::attempt($request->input('email'), $request->input('password'));
-
-			if ($token != null) {
-				return response()->json(['auth' => 'ok', 'token' => $token]);
-			} else {
-				throw new \Exception('ERR_TOKEN_ATTEMPT', 401);
-			}
-		}
-		catch (\Exception $e)
-		{
-			return response()->json(['auth' => 'not ok', 'error' => $e->getMessage(), 'error_code' => $e->getCode()]);
-		}
-
-		return response()->json(['auth' => 'not ok', 'token' => $token]);
+		return response()->json(['error' => 'ERR_AUTHENTICATION'], 401);
 	}
 }
+
+/*
+// Validateor example
+$validator = Validator::make($request->all(), [
+	'email' => 'required|email|max:255',
+	'pass' => 'required|min:8'
+], [
+	'required' => strtoupper('ERR_:attribute'),
+	'*' => strtoupper('ERR_:attribute')
+]);
+// MessageBag https://laravel.com/api/5.5/Illuminate/Support/MessageBag.html
+if ($validator->fails()) {
+	return $validator->errors();
+}
+*/

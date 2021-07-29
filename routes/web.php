@@ -1,7 +1,10 @@
 <?php
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use App\Mysql\Db as Database;
 
 $router->get('/', function () use ($router) {
@@ -36,22 +39,31 @@ $router->get('user/{id}', function ($id, Request $request) {
     // return 'User '.$id;
 });
 
+// Login user first
+$router->post('/login', 'AuthController@login');
+
 // Authenticate middleware in controller constructor
-$router->post('/panel', 'AuthController@create');
+$router->post('/panel', 'AuthController@update');
 
 // Authentication
-$router->post('/panel/auth', ['middleware' => 'auth', 'uses' => 'AuthController@create']);
+$router->post('/panel/auth', ['middleware' => 'auth', 'uses' => 'AuthController@update']);
 
 // Authenticate middelware
 $router->post('/panel/{id}', ['middleware' => ['auth','role:admin|worker|user'], function (Request $request, $id) {
     $user = $request->user();
+    $user = Auth::user();
 
-    return response()->json([
-        "authenticated" => $request->header('Authorization'),
-        "user.name" => $user->name,
-        "user.email" => $user->email,
-        "user.role" => $user->role
-    ]);
+    // The user is logged in
+    if (Auth::check()) {
+        return response()->json([
+            "authenticated" => $request->header('Authorization'),
+            "user.name" => $user->name,
+            "user.email" => $user->email,
+            "user.role" => $user->role
+        ]);
+    }
+
+    return response()->json(['error' => 'ERR_AUTHENTICATION'], 401);
 }]);
 
 // Middelware auth sample
@@ -60,9 +72,6 @@ $router->post('/panel/{id}', ['middleware' => ['auth','role:admin|worker|user'],
 //    $router->get('/panel/profil', ['uses' => 'Controller@method']);
 //});
 
-// Login
-// Authenticate middleware in controller constructor
-$router->post('/login', 'AuthController@login');
 
 // Set session
 $router->get('set-session', function (Request $request) {
@@ -123,8 +132,9 @@ $router->get('db/{id}', function ($id) {
     // All rows
     $rows = DB::select('select * from user where id != :id', ['id' => $id]);
     // Single row
-    $user = collect(DB::select('select * from user where id != :id', ['id' => $id]))->first();
-
+    // $user = collect(DB::select('select * from user where id != :id', ['id' => $id]))->first();
+    // $ok = collect(DB::update('update user SET api_token = :t where email = :e', ['e' => $email, 't' => $new_token]))->first();
+    // Delete
     // DB::delete('delete from user where id != 0');
     // $last_id = DB::table('user')->insertGetId(['pass => $pass, 'email => $email]);
 

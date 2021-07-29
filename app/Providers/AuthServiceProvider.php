@@ -31,23 +31,18 @@ class AuthServiceProvider extends ServiceProvider
         // the User instance via an API token or any other method necessary.
 
         $this->app['auth']->viaRequest('api', function ($request) {
+            // Default sample
+            // if ($request->input('api_token')) {
+            //     return User::where('api_token', $request->input('api_token'))->first();
+            // }
 
-            // Validate token in your User() controller class
-            //if ($request->input('api_token')) {
-            //   return User::where('api_token', $request->input('api_token'))->first();
-            //}
-
-            /* Custom Authorization */
-
-            // Get user token
-            $token = $request->header('Authorization');
-
-            // Clean bearer token
-            $token = str_ireplace('Bearer ', '', $token);
-
-            // Validate token in User Controller (return user object or null)
-            return User::auth($token);
-
+            // Bearer token sample
+            $token = str_ireplace('Bearer ', '', $request->header('Authorization'));
+            if (!empty($token)) {
+                return User::where('api_token', $token)->first();
+            }
         });
+
+        return null;
     }
 }

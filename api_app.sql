@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Czas generowania: 27 Lip 2021, 21:32
+-- Czas generowania: 28 Lip 2021, 17:51
 -- Wersja serwera: 10.5.10-MariaDB-2
 -- Wersja PHP: 7.4.15
 
@@ -26,11 +26,11 @@ USE `api_app`;
 -- --------------------------------------------------------
 
 --
--- Struktura tabeli dla tabeli `user`
+-- Struktura tabeli dla tabeli `users`
 --
 
-DROP TABLE IF EXISTS `user`;
-CREATE TABLE IF NOT EXISTS `user` (
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE IF NOT EXISTS `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL DEFAULT '',
   `email` varchar(190) NOT NULL,
@@ -38,24 +38,26 @@ CREATE TABLE IF NOT EXISTS `user` (
   `pass` varchar(100) NOT NULL,
   `active` int(1) NOT NULL DEFAULT 1,
   `api_token` varchar(255) NOT NULL DEFAULT '',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `token` (`api_token`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4;
 
 --
--- Tabela Truncate przed wstawieniem `user`
+-- Tabela Truncate przed wstawieniem `users`
 --
 
-TRUNCATE TABLE `user`;
+TRUNCATE TABLE `users`;
 --
--- Zrzut danych tabeli `user`
+-- Zrzut danych tabeli `users`
 --
 
-INSERT INTO `user` (`id`, `name`, `email`, `role`, `pass`, `active`, `api_token`) VALUES
-(17, 'Admin', '609667f8434ca@woo.xx', 'admin', 'd72ba322b362f42bae0d4f69f59f3996', 1, 'token666'),
-(18, 'Worker', 'worker@woo.xx', 'worker', '5f4dcc3b5aa765d61d8327deb882cf99', 1, '212c1087bcf3c20ea9ef7348665b22aafacc7a6b47a5bfaa67b30f0a1ee1ddc9'),
-(19, 'User', '609668330964d@woo.xx', 'user', '8a874e22987f99c1d3e35a8d25e54430', 1, 'token321');
+INSERT INTO `users` (`id`, `name`, `email`, `role`, `pass`, `active`, `api_token`, `created_at`, `updated_at`) VALUES
+(17, 'Admin', 'admin@woo.xx', 'admin', '5f4dcc3b5aa765d61d8327deb882cf99', 1, 'token666', '2021-07-28 15:24:34', '2021-07-28 15:24:34'),
+(18, 'Worker', 'worker@woo.xx', 'worker', '5f4dcc3b5aa765d61d8327deb882cf99', 1, 'token123', '2021-07-28 15:24:34', '2021-07-28 15:37:49'),
+(19, 'User', 'user@woo.xx', 'user', '5f4dcc3b5aa765d61d8327deb882cf99', 1, 'token321', '2021-07-28 15:24:34', '2021-07-28 15:24:34');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
