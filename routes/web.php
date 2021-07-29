@@ -39,7 +39,10 @@ $router->get('user/{id}', function ($id, Request $request) {
     // return 'User '.$id;
 });
 
-// Login user first
+// Register user
+$router->post('/register', 'AuthController@register');
+
+// Login user first !
 $router->post('/login', 'AuthController@login');
 
 // Authenticate middleware in controller constructor

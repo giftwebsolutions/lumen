@@ -3,9 +3,9 @@
 require_once __DIR__.'/../vendor/autoload.php';
 
 // Standard php session
-// require_once 'init.php';
+require_once 'init.php';
 
-// Lumen 
+// Lumen
 (new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
     dirname(__DIR__)
 ))->bootstrap();

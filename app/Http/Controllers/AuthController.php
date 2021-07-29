@@ -38,8 +38,7 @@ class AuthController extends Controller
 			'*' => strtoupper('ERR_:attribute')
 		]);
 
-		$size = env('AUTH_TOKEN_LENGTH', 32);
-		$token = bin2hex(random_bytes($size));
+		$token = User::uniqueToken();
 
 		try {
 			$user = collect(User::where('email', $request->input('email'))->where('pass', md5($request->input('pass')))->get())->first();
@@ -55,6 +54,46 @@ class AuthController extends Controller
 	}
 
 	/**
+	 * Register user
+	 *
+	 * @return Response
+	 */
+	public function register(Request $request)
+	{
+		$this->validate($request, [
+		    'email' => 'required|email|max:255',
+		    'pass' => 'required|min:8'
+		], [
+			'required' => strtoupper('ERR_:attribute'),
+			'*' => strtoupper('ERR_:attribute')
+		]);
+
+		try {
+			$user = User::create([
+				'email' => $request->input('email'),
+				'pass' => md5($request->input('pass')),
+				'api_token' => User::uniqueToken(),
+			]);
+
+			if($user->id > 0) {
+				return response()->json(['user_id' => $user->id]);
+			}
+		} catch (\Exception $e) {
+			// Duplicated
+			if($e->errorInfo[1] == '1062') {
+				return response()->json(['error' => 'ERR_EXISTS'], 402);
+			}
+			// Error
+			return response()->json([
+				'error' => 'ERR_DATABASE',
+				'error_message' => $e->getMessage()
+			], 402);
+		}
+
+		return response()->json(['error' => 'ERR_CREDENTIALS'], 401);
+	}
+
+	/**
 	 * Update user auth only
 	 *
 	 * @return Response
@@ -67,6 +106,8 @@ class AuthController extends Controller
 
 		// The user is logged in
 		if (Auth::check()) {
+			// Find record
+			// $user = User::find(1);
 			// Update user here ...
 			// Facades
 			// $cnt = DB::update('update users set name = :name where id = :id', ['id' => $user->id, 'name' => $request->input('name')]);
