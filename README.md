@@ -175,6 +175,9 @@ class AuthServiceProvider extends ServiceProvider
 # get
 curl -H 'Authorization: token123' http://lumex.xx/auth
 
+# POST register user
+curl -X POST -d 'email=cool@woo.xx&pass=password' http://lumen.xx/register
+
 # POST login user
 curl -X POST -d 'email=worker@woo.xx&password=password' http://lumex.xx/login
 
